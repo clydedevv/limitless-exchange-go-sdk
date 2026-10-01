@@ -2,6 +2,28 @@
 
 All notable changes to the Limitless Exchange Go SDK will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- **BREAKING (type):** `UserOrder` now matches the wire shape of `GET /markets/{slug}/user-orders`: `Side`, `MarketID` and `Price` are strings (`"BUY"`, `"9876"`, `"0.5"`), the token and order-type keys are `Token` / `Type`, and the row carries `OwnerID`, `Status`, `OriginalSize`, `RemainingSize` and `ClientOrderID`. Previously `json.Unmarshal` failed on every non-empty response (`json: invalid number literal, trying to unmarshal "\"BUY\"" into Number`), so `GetUserOrders` could never return an order. The signature-related fields the API never sent (`Maker`, `Signer`, `Salt`, `Signature`, `Expiration`, `Nonce`, `FeeRateBps`, `SignatureType`, `TokenID`, `OrderType`, `FilledSize`) are removed.
+- **BREAKING (value):** `SortByLiquidity` is removed and `SortByTrending` (`"trending"`) is added. The server rejects `sortBy=liquidity` with 400 (`sortBy must be one of the following values: ending_soon, high_value, lp_rewards, newest, trending`).
+- **BREAKING (type):** `OrderBook.MaxSpread` and `OrderBook.MinSize` are now `flexFloat` (call `.Float64()`), matching `OrderbookData` on the WebSocket. The REST endpoint sends decimal strings on one read path and JSON numbers on the other, and the number form failed to decode into `string`. `OrderBook.Midpoint` (midpoint of the best displayed bid and ask) is added; previously it was dropped.
+- `MarketPageMarketsParams.Filters` now expands `[]string` values into repeated query keys. Previously only `[]any` was expanded; a `[]string` was stringified as a single `[btc eth]` value and matched nothing.
+- `NewPriceData` decodes the initial AMM snapshot, where the server sends `updatedPrices` as a single object instead of an array. The object is normalized into a one-element `UpdatedPrices` slice; live array frames are unchanged.
+
+### Added
+
+- `MarketSettings.TakerDelayMs` (per-market taker delay in milliseconds).
+- `MarketMetadata.ExternalSlug`, `ExternalProvider`, `FeeRate`, `FixtureID`, `HomeTeamLogo`, `AwayTeamLogo` and `OutcomeLabels`, which the API sends and the struct previously dropped.
+- `HistoryEntry.TradeEventID`, `OrderID`, `MakerMatchID` and `HistoryResponse.TotalCount`.
+- `ExecutionOrderEvent.ClientOrderID`, `Reason`, `OccurredAt` and `PublishedAt`.
+
+### Changed
+
+- `OrderExecution.SettlementStatus` documents the `CANCELED` value (self-trade prevention rejected the taker order, `Reason` `STP_TAKER_REJECTED`).
+- README and changelog no longer describe cancel-replace as atomic; the two legs report independent outcomes.
+
 ## [1.1.0]
 
 ### Added
