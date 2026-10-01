@@ -25,7 +25,8 @@ type MarketMetadata struct {
 	ShouldMarketMake *bool   `json:"shouldMarketMake,omitempty"`
 	OpenPrice        *string `json:"openPrice,omitempty"`
 	// ExternalSlug and ExternalProvider identify the venue market this market
-	// mirrors (absent on native markets).
+	// mirrors (absent on native markets; an ExternalSlug without an
+	// ExternalProvider means polymarket).
 	ExternalSlug     *string  `json:"externalSlug,omitempty"`
 	ExternalProvider *string  `json:"externalProvider,omitempty"`
 	FeeRate          *float64 `json:"feeRate,omitempty"`
